@@ -4,7 +4,8 @@ import (
 	"wzDataCenter/app/zentao/zentao_common"
 )
 
-func GetLeixing(userId uint) (bool, *[]Leixing, int64) {
+// GetLeixing 按照用户、起止时间获取‘类型’数据
+func GetLeixing(userId uint, dateStart string, dateEnd string) (bool, *[]Leixing, int64) {
 	var d1 []Leixing
 	sql := `SELECT cloudname,sum(tt.esti) esti,sum(tt.cons) cons
 			  FROM (SELECT t3.id id,t1.name namec,t1.project proj,t3.account acct,t3.date dat,
@@ -48,11 +49,11 @@ func GetLeixing(userId uint) (bool, *[]Leixing, int64) {
 			           AND NOT EXISTS (SELECT 1 FROM zt_task t2 WHERE t2.parent = t1.id AND t2.deleted <> 2 )
 			       ) tt
 			  left join kt_cloud on cloudid=tt.tycc
-			 WHERE tt.dat BETWEEN DATE('2023-03-30') AND DATE('2023-04-26')
+			 WHERE tt.dat BETWEEN ? AND ?
 			   and tt.acct = ?
 			 GROUP BY tt.acct,tt.tycc
 			 ORDER BY tt.acct,tt.tycc`
-	res := zentao_common.ZENTAO_DB.Raw(sql, userId)
+	res := zentao_common.ZENTAO_DB.Raw(sql, dateStart, dateEnd, userId)
 	r1 := res.Scan(&d1)
 	if r1.Error != nil {
 		return false, nil, 0
