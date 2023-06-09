@@ -58,7 +58,7 @@ func InitConf(source string) *CONF {
 			Issuer:    conf.Section("jwt").Key("issuer").String(),
 		},
 		App: App{
-			AppZentao: conf.Section("app").Key("app_zentao").String(),
+			AppZentao: conf.Section("app").Key("app_zentao").In("1", []string{"1", "0"}),
 		},
 	}
 	return &cf
