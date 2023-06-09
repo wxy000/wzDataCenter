@@ -10,6 +10,10 @@ import (
 )
 
 func main() {
+
+	// 加载banner
+	common.ReadBanner("./common/banner.txt")
+
 	r := gin.Default()
 
 	//**************初始化***************//
