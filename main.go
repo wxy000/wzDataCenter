@@ -18,7 +18,7 @@ func main() {
 
 	//**************初始化***************//
 	// 读取配置文件
-	common.CONF = conf.InitConf("./conf/config.ini")
+	common.CONF, common.CONFFILE = conf.InitConf("./conf/config.ini")
 	// 初始化数据库
 	common.DB = common.InitDB(*common.CONF)
 	// 数据库迁移
@@ -33,6 +33,13 @@ func main() {
 	if common.CONF.App.AppZentao == "1" {
 		zentao.Router(r)
 	}
+
+	/*保存配置项到文件*/
+	/*common.CONFFILE.Section("jwt").Key("issuer").SetValue("就你是懒猫啊")
+	err := common.CONFFILE.SaveTo("./conf/config.ini")
+	if err != nil {
+		fmt.Println(err.Error())
+	}*/
 
 	// 运行
 	port := ":" + common.CONF.HttpPort
