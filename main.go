@@ -30,7 +30,9 @@ func main() {
 	// 路由
 	router(r)
 	/*子模块*/
-	zentao.Router(r)
+	if common.CONF.App.AppZentao == "1" {
+		zentao.Router(r)
+	}
 
 	// 运行
 	port := ":" + common.CONF.HttpPort

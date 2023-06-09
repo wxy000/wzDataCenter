@@ -21,11 +21,16 @@ type Jwt struct {
 	Issuer    string
 }
 
+type App struct {
+	AppZentao string
+}
+
 type CONF struct {
 	TokenName string
 	HttpPort  string
 	Mysql     Mysql
 	Jwt       Jwt
+	App       App
 }
 
 func InitConf(source string) *CONF {
@@ -51,6 +56,9 @@ func InitConf(source string) *CONF {
 			Secret:    conf.Section("jwt").Key("secret").String(),
 			ExpiresAT: conf.Section("jwt").Key("expiresat").String(),
 			Issuer:    conf.Section("jwt").Key("issuer").String(),
+		},
+		App: App{
+			AppZentao: conf.Section("app").Key("app_zentao").String(),
 		},
 	}
 	return &cf
