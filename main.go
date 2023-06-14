@@ -7,6 +7,7 @@ import (
 	"wzDataCenter/conf"
 	"wzDataCenter/middleware"
 	"wzDataCenter/models"
+	"wzDataCenter/router"
 )
 
 func main() {
@@ -28,7 +29,8 @@ func main() {
 	//**************初始化***************//
 
 	// 路由
-	router(r)
+	router.Router(r)
+	router.RouterWeb(r)
 	/*子模块*/
 	if common.CONF.App.AppZentao == "1" {
 		zentao.Router(r)
