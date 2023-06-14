@@ -18,6 +18,7 @@ func Router(r *gin.Engine) {
 
 	zentao := r.Group("/zentao", middleware.JWTAuth())
 	{
-		zentao.GET("/getLeixingInfo", zentao_controllers.GetLeixingInfo)
+		zentao.GET("/getAnalysisLeixing", zentao_controllers.GetAnalysisLeixing)
+		zentao.GET("/getAnalysisCustomer", zentao_controllers.GetAnalysisCustomer)
 	}
 }

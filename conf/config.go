@@ -21,19 +21,24 @@ type Jwt struct {
 	Issuer    string
 }
 
+type App struct {
+	AppZentao string
+}
+
 type CONF struct {
 	TokenName string
 	HttpPort  string
 	Mysql     Mysql
 	Jwt       Jwt
+	App       App
 }
 
-func InitConf(source string) *CONF {
+func InitConf(source string) (*CONF, *ini.File) {
 	// 读取配置文件
 	conf, err := ini.Load(source)
 	if err != nil {
 		log.Fatal("配置文件读取失败, err = ", err)
-		return nil
+		return nil, nil
 	}
 	cf := CONF{
 		TokenName: conf.Section("").Key("token_name").String(),
@@ -52,6 +57,9 @@ func InitConf(source string) *CONF {
 			ExpiresAT: conf.Section("jwt").Key("expiresat").String(),
 			Issuer:    conf.Section("jwt").Key("issuer").String(),
 		},
+		App: App{
+			AppZentao: conf.Section("app").Key("app_zentao").In("1", []string{"1", "0"}),
+		},
 	}
-	return &cf
+	return &cf, conf
 }

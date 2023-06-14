@@ -7,14 +7,14 @@ import (
 	"wzDataCenter/utils"
 )
 
-// GetLeixingInfo 获取‘类型’数据
+// GetAnalysisLeixing 获取‘类型’数据
 /*
 	p1:userId-用户id-必填项(直接通过token获取，无需传入)
 	p2:dateStart-起始时间-非必填
 	p3:dateEnd-截止时间-非必填
 	p4:type0-数据格式类型-0.原始数据格式，1.预计实际都有，2.预计，3.实际
 */
-func GetLeixingInfo(ctx *gin.Context) {
+func GetAnalysisLeixing(ctx *gin.Context) {
 	user, _ := ctx.Get("claims")
 	userId := user.(*utils.CustomClaims).Users.ID
 
@@ -30,7 +30,7 @@ func GetLeixingInfo(ctx *gin.Context) {
 	dateEnd = dateEnd + " 23:59:59"
 	type0 := ctx.DefaultQuery("type0", "0")
 
-	succ, leixingList, _ := zentao_models.GetLeixing(userId, dateStart, dateEnd)
+	succ, leixingList, _ := zentao_models.GetAnalysisLeixing(userId, dateStart, dateEnd)
 	if succ {
 		var result interface{}
 		result = leixingList
