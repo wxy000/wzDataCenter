@@ -14,6 +14,9 @@ type Users struct {
 	Phone    string `json:"phone" gorm:"size:100;comment:手机号码"`
 	Email    string `json:"email" gorm:"size:100;comment:邮箱"`
 	Gender   string `json:"gender" gorm:"size:1;not null;default:m;comment:性别-m男w女"`
+	Role     string `json:"role" gorm:"size:1;not null;defalut:1;comment:角色-0管理员1普通用户..."`
+	Avat     string `json:"avat" gorm:"size:255;comment:头像"`
+	Status   string `json:"status" gorm:"size:1;not null;default:1;comment:状态-0未激活1已激活"`
 	Mark     string `json:"mark" gorm:"size:1000;comment:备注"`
 }
 
