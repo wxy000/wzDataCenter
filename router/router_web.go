@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"wzDataCenter/controllers/controllers_web"
 )
 
 func RouterWeb(r *gin.Engine) {
@@ -16,12 +16,6 @@ func RouterWeb(r *gin.Engine) {
 
 	web := r.Group("/web")
 	{
-		web.GET("/hellohtml", func(ctx *gin.Context) {
-			path := "请求路径：" + ctx.FullPath()
-			ctx.HTML(http.StatusOK, "index.html", gin.H{
-				"path":  path,
-				"title": "Hello!",
-			})
-		})
+		web.GET("/index", controllers_web.LayoutMenu)
 	}
 }

@@ -58,10 +58,13 @@
                 </li>
                 <li class="layui-nav-item">
                     <a href="javascript:;">子应用配置</a>
-                    <dl class="layui-nav-child">
-                        <dd class="iframe-click"><a href="javascript:;" lay-href="http://124.221.178.62/zentao">禅道</a></dd>
-                        <dd class="iframe-click"><a href="javascript:;">list 2</a></dd>
-                        <dd class="iframe-click"><a href="">超链接</a></dd>
+                    <dl class="layui-nav-child" id="wzDataCenter-app">
+                        {{$layoutMenu:=.Data.App}}
+                        {{range $k,$v:=$layoutMenu}}
+                        {{if eq $v "1"}}
+                        <dd class="iframe-click"><a href="" lay-href="http://124.221.178.62/zentao">{{$k}}</a></dd>
+                        {{end}}
+                        {{end}}
                     </dl>
                 </li>
             </ul>
@@ -82,16 +85,15 @@
 <script>
     //JS
     layui.use(['element', 'layer', 'util'], function(){
-        var element = layui.element
-            ,layer = layui.layer
-            ,util = layui.util
-            ,$ = layui.$;
+        const element = layui.element
+             ,layer = layui.layer
+             ,util = layui.util
+             ,$ = layui.$;
 
         //切换页面
         $(".iframe-click").click(function (e){
             e.preventDefault();
             $("#iframeMain").attr("src",$(this).find("a").attr("lay-href"));
-            console.log($(this))
         });
 
         //头部事件
