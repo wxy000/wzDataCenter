@@ -19,7 +19,7 @@ func main() {
 
 	//**************初始化***************//
 	// 读取配置文件
-	common.CONF, common.CONFFILE = conf.InitConf("./conf/config.ini")
+	common.CONF = conf.InitConf("./conf/config.ini")
 	// 初始化数据库
 	common.DB = common.InitDB(*common.CONF)
 	// 数据库迁移
@@ -30,7 +30,6 @@ func main() {
 
 	// 路由
 	router.Router(r)
-	router.RouterWeb(r)
 	/*子模块*/
 	if common.CONF.App.AppZentao == "1" {
 		zentao.Router(r)

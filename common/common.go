@@ -1,7 +1,6 @@
 package common
 
 import (
-	"gopkg.in/ini.v1"
 	"gorm.io/gorm"
 	"wzDataCenter/conf"
 )
@@ -14,4 +13,3 @@ const (
 
 var DB *gorm.DB
 var CONF *conf.CONF
-var CONFFILE *ini.File

@@ -33,12 +33,12 @@ type CONF struct {
 	App       App
 }
 
-func InitConf(source string) (*CONF, *ini.File) {
+func InitConf(source string) *CONF {
 	// 读取配置文件
 	conf, err := ini.Load(source)
 	if err != nil {
 		log.Fatal("配置文件读取失败, err = ", err)
-		return nil, nil
+		return nil
 	}
 	cf := CONF{
 		TokenName: conf.Section("").Key("token_name").String(),
@@ -61,5 +61,5 @@ func InitConf(source string) (*CONF, *ini.File) {
 			AppZentao: conf.Section("app").Key("app_zentao").In("1", []string{"1", "0"}),
 		},
 	}
-	return &cf, conf
+	return &cf
 }
