@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"wzDataCenter/app/inword"
 	"wzDataCenter/app/zentao"
 	"wzDataCenter/common"
 	"wzDataCenter/conf"
@@ -33,6 +34,9 @@ func main() {
 	/*子模块*/
 	if common.CONF.App.AppZentao == "1" {
 		zentao.Router(r)
+	}
+	if common.CONF.App.AppInword == "1" {
+		inword.Router(r)
 	}
 
 	/*保存配置项到文件*/
