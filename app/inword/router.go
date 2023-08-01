@@ -9,5 +9,6 @@ func Router(r *gin.Engine) {
 	inword := r.Group("/inword")
 	{
 		inword.GET("/getRandomWord", inword_controllers.GetRandomWord)
+		inword.GET("getRandomImg", inword_controllers.GetRandomImg)
 	}
 }

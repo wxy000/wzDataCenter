@@ -71,3 +71,38 @@ func GetRandomWord(ctx *gin.Context) {
 	}
 	common.OkWithData(result, ctx)
 }
+
+// GetRandomImg 随机获取一行文本
+func GetRandomImg(ctx *gin.Context) {
+	filename := ctx.DefaultQuery("file", "default")
+
+	filepath := "./app/inword/images/" + filename + ".txt"
+
+	fileHanle, err := os.OpenFile(filepath, os.O_RDONLY, 0666)
+	if err != nil {
+		common.FailWithMsg(err.Error(), ctx)
+	}
+	defer fileHanle.Close()
+
+	scanner := bufio.NewScanner(fileHanle)
+
+	// 获取总行数
+	count := getRows(filepath)
+	// 获取随机行数
+	randomRow := getRandom(count) + 1
+
+	var result string
+	// 按行处理txt
+	i := 0
+	for scanner.Scan() {
+		i++
+		if i == randomRow {
+			result = strings.TrimSpace(scanner.Text())
+			break
+		}
+	}
+	if result == "" {
+		result = "xxx"
+	}
+	common.OkWithData(result, ctx)
+}
