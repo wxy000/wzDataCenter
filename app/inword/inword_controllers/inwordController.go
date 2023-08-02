@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/gin-gonic/gin"
 	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -75,6 +76,10 @@ func GetRandomWord(ctx *gin.Context) {
 // GetRandomImg 随机获取一行文本
 func GetRandomImg(ctx *gin.Context) {
 	filename := ctx.DefaultQuery("file", "default")
+	isPage := ctx.DefaultQuery("isPage", "N")
+	if isPage != "N" && isPage != "Y" {
+		isPage = "N"
+	}
 
 	filepath := "./app/inword/images/" + filename + ".txt"
 
@@ -104,5 +109,14 @@ func GetRandomImg(ctx *gin.Context) {
 	if result == "" {
 		result = "xxx"
 	}
-	common.OkWithData(result, ctx)
+	if isPage == "N" {
+		common.OkWithData(result, ctx)
+	} else {
+		ctx.HTML(http.StatusOK, "index.html",
+			common.Response{
+				Code: http.StatusOK,
+				Msg:  "获取图片成功",
+				Data: result,
+			})
+	}
 }
