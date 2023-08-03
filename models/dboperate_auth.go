@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 	"wzDataCenter/common"
 )
 
@@ -47,11 +48,18 @@ func LoginByUsername(username string, password string) (*Users, error) {
 	if result.RowsAffected < 1 {
 		return nil, errors.New("用户名密码错误")
 	}
+	currentTime := time.Now()
+	updLastLoginTime := common.DB.Model(&user).Where("username = ? and password = ?", username, password).Update("lastlogintime", currentTime)
+	if updLastLoginTime.RowsAffected < 1 {
+		return nil, errors.New("未知错误，请联系管理员或稍后再试")
+	}
+	common.DB.Where("username = ? and password = ?", username, password).Limit(1).Find(&user)
 	return &user, nil
 }
 
 // UpdateUserInfoByID 根据id更新用户信息
 func UpdateUserInfoByID(userid uint, user Users) error {
+	user.Lastlogintime = time.Now()
 	result := common.DB.Model(&user).Omit("id", "password").Where("id = ?", userid).Updates(user)
 	if result.RowsAffected < 1 {
 		return result.Error
@@ -72,6 +80,11 @@ func UpdatePasswordByID(userid uint, oldpw string, password string) error {
 	r2 := common.DB.Model(&user).Where("id = ?", userid).Update("password", password)
 	if r2.RowsAffected < 1 {
 		return errors.New("密码修改失败，请稍后再试")
+	}
+	currentTime := time.Now()
+	r3 := common.DB.Model(&user).Where("id = ?", userid).Update("lastlogintime", currentTime)
+	if r3.RowsAffected < 1 {
+		return errors.New("未知错误，请联系管理员或稍后再试")
 	}
 	return nil
 }

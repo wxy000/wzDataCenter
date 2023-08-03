@@ -33,6 +33,12 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
+		if err := CheckUserLastLoginTime(claims); err != nil {
+			common.FailLoginWithMsg(err.Error(), ctx)
+			ctx.Abort()
+			return
+		}
+
 		// 将当前请求的claims信息保存到请求的上下文c上
 		ctx.Set("claims", claims)
 		// 后续的处理函数可以用过ctx.Get("claims")来获取当前请求的用户信息
@@ -50,4 +56,13 @@ func CheckUserInfo(claims *utils.CustomClaims) error {
 		return nil
 	}
 	return errors.New("用户不存在")
+}
+
+func CheckUserLastLoginTime(claims *utils.CustomClaims) error {
+	var user1 models.Users
+	result := common.DB.Where(&models.Users{Username: claims.Username, Lastlogintime: claims.Lastlogintime}).Find(&user1)
+	if result.RowsAffected >= 1 {
+		return nil
+	}
+	return errors.New("用户已在其他地方登录，请勿将密码泄露给其他人")
 }
