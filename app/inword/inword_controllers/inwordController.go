@@ -93,6 +93,9 @@ func GetRandomWords(ctx *gin.Context) {
 
 	// 获取总行数
 	count := getRows(filepath)
+	if numss > count {
+		numss = count
+	}
 	// 获取随机行数
 	randomRows := getRandoms(count, numss)
 
@@ -138,6 +141,9 @@ func GetRandomImgs(ctx *gin.Context) {
 
 	// 获取总行数
 	count := getRows(filepath)
+	if numss > count {
+		numss = count
+	}
 	// 获取随机行数
 	randomRows := getRandoms(count, numss)
 
