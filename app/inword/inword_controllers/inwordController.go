@@ -19,6 +19,13 @@ func getRandoms(rows int, num int) []int {
 	nums := make([]int, num)
 	for i := 0; i < len(nums); i++ {
 		nums[i] = rand.Intn(rows) + 1
+	loop:
+		for k := 0; k < i; k++ {
+			if nums[k] == nums[i] {
+				nums[i] = rand.Intn(rows) + 1
+				goto loop
+			}
+		}
 	}
 	sort.Ints(nums)
 	return nums
