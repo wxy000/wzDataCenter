@@ -29,6 +29,8 @@ func main() {
 	models.Setup()
 	// 放行所有跨域请求
 	r.Use(middleware.Cors())
+	// 黑名单
+	r.Use(middleware.BlacklistMiddleware())
 	// ip限流
 	err := utils.SetupIPRateLimiter()
 	if err != nil {
