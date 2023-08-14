@@ -27,12 +27,17 @@ type App struct {
 	Appparser12306 string
 }
 
+type Limiter struct {
+	CountPerSecond int
+}
+
 type CONF struct {
 	TokenName string
 	HttpPort  string
 	Mysql     Mysql
 	Jwt       Jwt
 	App       App
+	Limiter   Limiter
 }
 
 func InitConf(source string) *CONF {
@@ -63,6 +68,9 @@ func InitConf(source string) *CONF {
 			AppZentao:      conf.Section("app").Key("app_zentao").In("1", []string{"1", "0"}),
 			AppInword:      conf.Section("app").Key("app_inword").In("1", []string{"1", "0"}),
 			Appparser12306: conf.Section("app").Key("app_parser12306").In("1", []string{"1", "0"}),
+		},
+		Limiter: Limiter{
+			CountPerSecond: conf.Section("limiter").Key("countPerSecond").MustInt(),
 		},
 	}
 	return &cf

@@ -10,6 +10,7 @@ import (
 	"wzDataCenter/middleware"
 	"wzDataCenter/models"
 	"wzDataCenter/router"
+	"wzDataCenter/utils"
 )
 
 func main() {
@@ -28,6 +29,12 @@ func main() {
 	models.Setup()
 	// 放行所有跨域请求
 	r.Use(middleware.Cors())
+	// ip限流
+	err := utils.SetupIPRateLimiter()
+	if err != nil {
+		return
+	}
+	r.Use(middleware.LimitMiddleware())
 	//**************初始化***************//
 
 	// 路由
