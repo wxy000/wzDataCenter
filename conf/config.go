@@ -22,8 +22,9 @@ type Jwt struct {
 }
 
 type App struct {
-	AppZentao string
-	AppInword string
+	AppZentao      string
+	AppInword      string
+	Appparser12306 string
 }
 
 type CONF struct {
@@ -59,8 +60,9 @@ func InitConf(source string) *CONF {
 			Issuer:    conf.Section("jwt").Key("issuer").String(),
 		},
 		App: App{
-			AppZentao: conf.Section("app").Key("app_zentao").In("1", []string{"1", "0"}),
-			AppInword: conf.Section("app").Key("app_inword").In("1", []string{"1", "0"}),
+			AppZentao:      conf.Section("app").Key("app_zentao").In("1", []string{"1", "0"}),
+			AppInword:      conf.Section("app").Key("app_inword").In("1", []string{"1", "0"}),
+			Appparser12306: conf.Section("app").Key("app_parser12306").In("1", []string{"1", "0"}),
 		},
 	}
 	return &cf
