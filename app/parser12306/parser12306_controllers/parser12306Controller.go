@@ -3,6 +3,7 @@ package parser12306_controllers
 import (
 	"github.com/gin-gonic/gin"
 	"regexp"
+	"time"
 	"wzDataCenter/common"
 )
 
@@ -25,6 +26,9 @@ func ParserTicketCalendar(ctx *gin.Context) {
 	// 获取时间
 	timeRegex := regexp.MustCompile(timePattern)
 	timeArr := timeRegex.FindStringSubmatch(baseStr)
+	timeStr := timeArr[1] + "-" + timeArr[2] + "-" + timeArr[3] + "-" + timeArr[4]
+	timeStart, _ := time.Parse("2006-01-02-15:04", timeStr)
+	timeEnd := timeStart.Add(time.Minute * time.Duration(90)) // 90表示90分钟
 
 	// 获取站点
 	siteRegex := regexp.MustCompile(sitePattern)
@@ -45,11 +49,8 @@ func ParserTicketCalendar(ctx *gin.Context) {
 	// fmt.Println("提取字符串内容：", baseStr)
 
 	common.OkWithData(gin.H{
-		"time":           timeArr[0],
-		"year":           timeArr[1],
-		"month":          timeArr[2],
-		"day":            timeArr[3],
-		"hour":           timeArr[4],
+		"timeStart":      timeStart,
+		"timeEnd":        timeEnd,
 		"site":           siteArr[0],
 		"siteStart":      siteArr[1],
 		"siteEnd":        siteArr[2],
