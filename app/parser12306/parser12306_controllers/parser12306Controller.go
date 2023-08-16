@@ -29,6 +29,9 @@ func ParserTicketCalendar(ctx *gin.Context) {
 	timeStr := timeArr[1] + "-" + timeArr[2] + "-" + timeArr[3] + "-" + timeArr[4]
 	timeStart, _ := time.Parse("2006-01-02-15:04", timeStr)
 	timeEnd := timeStart.Add(time.Minute * time.Duration(90)) // 90表示90分钟
+	// 格式化时间
+	timeStart1 := timeStart.Format("2006-01-02 15:04")
+	timeEnd1 := timeEnd.Format("2006-01-02 15:04")
 
 	// 获取站点
 	siteRegex := regexp.MustCompile(sitePattern)
@@ -49,8 +52,8 @@ func ParserTicketCalendar(ctx *gin.Context) {
 	// fmt.Println("提取字符串内容：", baseStr)
 
 	common.OkWithData(gin.H{
-		"timeStart":      timeStart,
-		"timeEnd":        timeEnd,
+		"timeStart":      timeStart1,
+		"timeEnd":        timeEnd1,
 		"site":           siteArr[0],
 		"siteStart":      siteArr[1],
 		"siteEnd":        siteArr[2],
