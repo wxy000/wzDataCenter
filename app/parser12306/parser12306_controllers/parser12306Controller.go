@@ -12,7 +12,7 @@ func ParserTicketCalendar(ctx *gin.Context) {
 	name := ctx.PostForm("name")
 	rawData := ctx.PostForm("rawData")
 
-	basePattern := "\\d\\." + name + "，\\d{4}年(.*)检票口([0-9a-zA-Z]*)(，电子客票。|。)"
+	basePattern := "\\d\\." + name + "，\\d{4}年(.*)(，电子客票。|。)"
 	timePattern := "(\\d{4})年(\\d{1,2})月(\\d{1,2})日(\\d{2}:\\d{2})开"
 	sitePattern := "([\u4e00-\u9fa5]*)[—-]([\u4e00-\u9fa5]*)"
 	trainNumberPattern := "([0-9a-zA-Z]*)次列车"
