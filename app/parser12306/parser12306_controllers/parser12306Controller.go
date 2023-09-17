@@ -48,6 +48,9 @@ func ParserTicketCalendar(ctx *gin.Context) {
 	// 检票口
 	ticketEntranceRegex := regexp.MustCompile(ticketEntrancePattern)
 	ticketEntranceArr := ticketEntranceRegex.FindStringSubmatch(baseStr)
+	if len(ticketEntranceArr) == 0 {
+		ticketEntranceArr[1] = "0"
+	}
 
 	// fmt.Println("提取字符串内容：", baseStr)
 
