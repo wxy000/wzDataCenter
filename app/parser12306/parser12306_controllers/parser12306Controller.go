@@ -49,7 +49,7 @@ func ParserTicketCalendar(ctx *gin.Context) {
 	ticketEntranceRegex := regexp.MustCompile(ticketEntrancePattern)
 	ticketEntranceArr := ticketEntranceRegex.FindStringSubmatch(baseStr)
 	if len(ticketEntranceArr) == 0 {
-		ticketEntranceArr[1] = "0"
+		ticketEntranceArr = []string{"0", "0"}
 	}
 
 	// fmt.Println("提取字符串内容：", baseStr)
