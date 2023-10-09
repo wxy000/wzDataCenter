@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"wzDataCenter/app/giteeGallery"
 	"wzDataCenter/app/inword"
 	"wzDataCenter/app/parser12306"
 	"wzDataCenter/app/zentao"
@@ -50,6 +51,9 @@ func main() {
 	}
 	if common.CONF.App.Appparser12306 == "1" {
 		parser12306.Router(r)
+	}
+	if common.CONF.App.Appgiteegallery == "1" {
+		giteeGallery.Router(r)
 	}
 
 	/*保存配置项到文件*/
