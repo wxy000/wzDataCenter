@@ -17,5 +17,6 @@ func Router(r *gin.Engine) {
 	giteeGallery := r.Group("/giteeGallery")
 	{
 		giteeGallery.POST("/update", giteeGallery_controllers.Update)
+		giteeGallery.GET("/get", giteeGallery_controllers.Get)
 	}
 }
