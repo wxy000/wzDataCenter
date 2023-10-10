@@ -2,9 +2,7 @@ package giteeGallery_controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"net/http"
-	"net/url"
+	"github.com/unti-io/go-utils/utils"
 	"strconv"
 	"strings"
 	"time"
@@ -24,63 +22,74 @@ func Update(ctx *gin.Context) {
 
 	message := "Update " + filename + "." + suffix + " by 快捷指令 - " + msgTime
 
-	// 创建发送客户端
-	client := &http.Client{}
 	// url
-	uri := "https://gitee.com/api/v5/repos/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Owner + "/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Repo + "/contents/" + filename
-	// 发送的数据
-	data := url.Values{}
-	data.Set("access_token", giteeGallery_common.GITEEGALLERY_CONF.Gitee.AccessToken)
-	data.Set("content", picture)
-	data.Set("message", message)
-	data.Set("branch", giteeGallery_common.GITEEGALLERY_CONF.Gitee.Branch)
-	// 执行请求
-	resp, err := client.PostForm(uri, data)
-	defer resp.Body.Close()
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-	}
+	url := "https://gitee.com/api/v5/repos/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Owner + "/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Repo + "/contents/" + filename
 
-	if !strings.HasPrefix(strconv.Itoa(resp.StatusCode), "20") {
+	curl := utils.Curl(utils.CurlRequest{
+		Method: "POST",
+		Url:    url,
+		Body: map[string]any{
+			"access_token": giteeGallery_common.GITEEGALLERY_CONF.Gitee.AccessToken,
+			"content":      picture,
+			"message":      message,
+			"branch":       giteeGallery_common.GITEEGALLERY_CONF.Gitee.Branch,
+		},
+	}).Send()
+
+	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
 		common.FailWithMsg("网络连接失败，请稍后再试", ctx)
+	} else {
+		common.OkWithData(curl.Text, ctx)
 	}
-	body, _ := ioutil.ReadAll(resp.Body)
-	/*var v interface{}
-	json.Unmarshal(body, &v)
-	respData := v.(map[string]interface{})
-	contentData := respData["content"].(map[string]interface{})
-
-	common.OkWithData(contentData["download_url"], ctx)*/
-	common.OkWithData(string(body), ctx)
 }
 
 // Get 获取仓库具体路径下的内容
 func Get(ctx *gin.Context) {
 	filename := ctx.DefaultQuery("filename", "")
 
-	// 创建发送客户端
-	client := &http.Client{}
-	// url
-	uri := "https://gitee.com/api/v5/repos/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Owner + "/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Repo + "/contents/" + filename
-	// 发送的数据
-	data := url.Values{}
-	data.Set("access_token", giteeGallery_common.GITEEGALLERY_CONF.Gitee.AccessToken)
-	payload := strings.NewReader(data.Encode())
-	req, err := http.NewRequest("GET", uri, payload)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-	}
-	// 执行请求
-	resp, err := client.Do(req)
-	defer resp.Body.Close()
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-	}
+	url := "https://gitee.com/api/v5/repos/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Owner + "/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Repo + "/contents/" + filename
 
-	if !strings.HasPrefix(strconv.Itoa(resp.StatusCode), "20") {
+	curl := utils.Curl(utils.CurlRequest{
+		Method: "GET",
+		Url:    url,
+		Query: map[string]any{
+			"access_token": giteeGallery_common.GITEEGALLERY_CONF.Gitee.AccessToken,
+		},
+	}).Send()
+
+	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
 		common.FailWithMsg("网络连接失败，请稍后再试", ctx)
+	} else {
+		common.OkWithData(curl.Text, ctx)
 	}
-	body, _ := ioutil.ReadAll(resp.Body)
+}
 
-	common.OkWithData(string(body), ctx)
+// Del 删除图片
+func Del(ctx *gin.Context) {
+	sha := ctx.PostForm("sha")
+	path := ctx.PostForm("path")
+
+	currentTime := time.Now()
+	msgTime := currentTime.Format("2006-01-02 15:04:05")
+
+	message := "Update " + path + " by 快捷指令 - " + msgTime
+
+	// url
+	url := "https://gitee.com/api/v5/repos/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Owner + "/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Repo + "/contents/" + path
+
+	curl := utils.Curl(utils.CurlRequest{
+		Method: "DELETE",
+		Url:    url,
+		Query: map[string]any{
+			"access_token": giteeGallery_common.GITEEGALLERY_CONF.Gitee.AccessToken,
+			"sha":          sha,
+			"message":      message,
+		},
+	}).Send()
+
+	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
+		common.FailWithMsg("网络连接失败，请稍后再试", ctx)
+	} else {
+		common.OkWithData(curl.Text, ctx)
+	}
 }

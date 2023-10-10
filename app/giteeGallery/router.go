@@ -18,5 +18,6 @@ func Router(r *gin.Engine) {
 	{
 		giteeGallery.POST("/update", giteeGallery_controllers.Update)
 		giteeGallery.GET("/get", giteeGallery_controllers.Get)
+		giteeGallery.GET("/del", giteeGallery_controllers.Del)
 	}
 }
