@@ -93,3 +93,32 @@ func Del(ctx *gin.Context) {
 		common.OkWithData(curl.Text, ctx)
 	}
 }
+
+// GetE 获取文件（加密）Encryption
+func GetE(ctx *gin.Context) {
+	filename := ctx.DefaultQuery("filename", "")
+	code := ctx.DefaultQuery("code", "")
+
+	// 验证密码
+	correctCode := time.Now().Format("200601021504")
+	correctCode = "wxy" + correctCode
+	if correctCode == code {
+		url := "https://gitee.com/api/v5/repos/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Owner + "/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Repo + "/contents/" + filename
+
+		curl := utils.Curl(utils.CurlRequest{
+			Method: "GET",
+			Url:    url,
+			Query: map[string]any{
+				"access_token": giteeGallery_common.GITEEGALLERY_CONF.Gitee.AccessToken,
+			},
+		}).Send()
+
+		if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
+			common.FailWithMsg("网络连接失败，请稍后再试", ctx)
+		} else {
+			common.OkWithData(curl.Text, ctx)
+		}
+	} else {
+		common.FailWithMsg("无效的密码", ctx)
+	}
+}
