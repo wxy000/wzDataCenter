@@ -37,7 +37,7 @@ func Update(ctx *gin.Context) {
 	}).Send()
 
 	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
-		common.FailWithMsg(curl.Error.Error(), ctx)
+		common.FailWithMsg(curl.Text, ctx)
 	} else {
 		common.OkWithData(curl.Text, ctx)
 	}
@@ -58,7 +58,7 @@ func Get(ctx *gin.Context) {
 	}).Send()
 
 	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
-		common.FailWithMsg("网络连接失败，请稍后再试", ctx)
+		common.FailWithMsg(curl.Text, ctx)
 	} else {
 		common.OkWithData(curl.Text, ctx)
 	}
@@ -88,7 +88,7 @@ func Del(ctx *gin.Context) {
 	}).Send()
 
 	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
-		common.FailWithMsg(curl.Error.Error(), ctx)
+		common.FailWithMsg(curl.Text, ctx)
 	} else {
 		common.OkWithData(curl.Text, ctx)
 	}
