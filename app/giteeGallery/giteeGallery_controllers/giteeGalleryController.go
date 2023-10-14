@@ -37,7 +37,7 @@ func Update(ctx *gin.Context) {
 	}).Send()
 
 	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
-		common.FailWithMsg("网络连接失败，请稍后再试", ctx)
+		common.FailWithMsg(curl.Error.Error(), ctx)
 	} else {
 		common.OkWithData(curl.Text, ctx)
 	}
@@ -72,7 +72,7 @@ func Del(ctx *gin.Context) {
 	currentTime := time.Now()
 	msgTime := currentTime.Format("2006-01-02 15:04:05")
 
-	message := "Update " + path + " by 快捷指令 - " + msgTime
+	message := "Delete " + path + " by 快捷指令 - " + msgTime
 
 	// url
 	url := "https://gitee.com/api/v5/repos/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Owner + "/" + giteeGallery_common.GITEEGALLERY_CONF.Gitee.Repo + "/contents/" + path
@@ -88,7 +88,7 @@ func Del(ctx *gin.Context) {
 	}).Send()
 
 	if !strings.HasPrefix(strconv.Itoa(curl.StatusCode), "20") {
-		common.FailWithMsg("网络连接失败，请稍后再试", ctx)
+		common.FailWithMsg(curl.Error.Error(), ctx)
 	} else {
 		common.OkWithData(curl.Text, ctx)
 	}
