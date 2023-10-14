@@ -66,8 +66,8 @@ func Get(ctx *gin.Context) {
 
 // Del 删除图片
 func Del(ctx *gin.Context) {
-	sha := ctx.PostForm("sha")
-	path := ctx.PostForm("path")
+	sha := ctx.DefaultQuery("sha", "")
+	path := ctx.DefaultQuery("path", "")
 
 	currentTime := time.Now()
 	msgTime := currentTime.Format("2006-01-02 15:04:05")
