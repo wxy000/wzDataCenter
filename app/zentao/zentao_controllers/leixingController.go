@@ -121,3 +121,28 @@ func getLeixingS(list []zentao_models.Leixing) interface{} {
 	}
 	return rlist
 }
+
+// GetAnalysisCustomerDetail 按照类型取客户明细
+func GetAnalysisCustomerDetail(ctx *gin.Context) {
+	user, _ := ctx.Get("claims")
+	userId := user.(*utils.CustomClaims).Users.ID
+
+	dateStart := ctx.DefaultQuery("dateStart", "1900-01-01")
+	if dateStart == "" {
+		dateStart = "1900-01-01"
+	}
+	dateStart = dateStart + " 00:00:00"
+	dateEnd := ctx.DefaultQuery("dateEnd", "3000-12-31")
+	if dateEnd == "" {
+		dateEnd = "3000-12-31"
+	}
+	dateEnd = dateEnd + " 23:59:59"
+	type0 := ctx.Query("type0")
+
+	succ, customerList, count := zentao_models.GetAnalysisCustomerDetail(userId, type0, dateStart, dateEnd)
+	if succ {
+		common.OkWithDataC(count, customerList, ctx)
+	} else {
+		common.FailC(count, ctx)
+	}
+}
