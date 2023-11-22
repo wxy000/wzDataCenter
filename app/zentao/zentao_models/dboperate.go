@@ -135,3 +135,23 @@ func GetAnalysisCustomerDetail(userId uint, type0 string, dateStart string, date
 	}
 	return true, &d1, r1.RowsAffected
 }
+
+// GetAnalysisLeixingDetail 按照用户、起止时间、客户获取详细类型数据
+func GetAnalysisLeixingDetail(userId uint, project string, dateStart string, dateEnd string) (bool, *[]LeixingDetail, int64) {
+	var d1 []LeixingDetail
+	sql := `SELECT t3.cloudname leixing,t0.id id,t0.name titlename,t2.work work,t2.date workdate,t2.cchour esti,t2.consumed cons
+			  FROM zt_task t0
+			  LEFT JOIN zt_project t1 on t1.id = t0.project
+			  LEFT JOIN zt_effort t2 on t2.objectID = t0.id
+			  left join kt_cloud t3 on t3.cloudid =t0.type
+			 WHERE t0.project = ?
+			   AND t2.account = ?
+			   AND t2.deleted = '0'
+			   AND t2.date BETWEEN ? AND ?`
+	res := zentao_common.ZENTAO_DB.Raw(sql, project, userId, dateStart, dateEnd)
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
