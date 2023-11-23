@@ -1,6 +1,7 @@
 package zentao_models
 
 import (
+	"net/url"
 	"wzDataCenter/app/zentao/zentao_common"
 )
 
@@ -144,11 +145,12 @@ func GetAnalysisLeixingDetail(userId uint, project string, dateStart string, dat
 			  LEFT JOIN zt_project t1 on t1.id = t0.project
 			  LEFT JOIN zt_effort t2 on t2.objectID = t0.id
 			  left join kt_cloud t3 on t3.cloudid =t0.type
-			 WHERE t0.project = ?
+			 WHERE t1.name = ?
 			   AND t2.account = ?
 			   AND t2.deleted = '0'
 			   AND t2.date BETWEEN ? AND ?`
-	res := zentao_common.ZENTAO_DB.Raw(sql, project, userId, dateStart, dateEnd)
+	decodeproject, _ := url.QueryUnescape(project)
+	res := zentao_common.ZENTAO_DB.Raw(sql, decodeproject, userId, dateStart, dateEnd)
 	r1 := res.Scan(&d1)
 	if r1.Error != nil {
 		return false, nil, 0

@@ -135,7 +135,7 @@ func GetAnalysisLeixingDetail(ctx *gin.Context) {
 	dateEnd = dateEnd + " 23:59:59"
 	project := ctx.Query("project")
 
-	succ, leixingList, count := zentao_models.GetAnalysisCustomerDetail(userId, project, dateStart, dateEnd)
+	succ, leixingList, count := zentao_models.GetAnalysisLeixingDetail(userId, project, dateStart, dateEnd)
 	if succ {
 		common.OkWithDataC(count, leixingList, ctx)
 	} else {
