@@ -37,3 +37,17 @@ type LeixingDetail struct {
 	Esti      float64   `json:"esti"`      //预计工时
 	Cons      float64   `json:"cons"`      //实际工时
 }
+
+type LeixingHeatmap struct {
+	Cloudname string  `json:"cloudname"` //类型
+	Esti      float64 `json:"esti"`      //预计工时
+	Dateyear  int     `json:"dateyear"`  //年度
+	Rk        int     `json:"rk"`        //类型排序
+}
+
+type CustomerHeatmap struct {
+	Customername string  `json:"customername"` //客户
+	Esti         float64 `json:"esti"`         //预计工时
+	Dateyear     int     `json:"dateyear"`     //年度
+	Rk           int     `json:"rk"`           //类型排序
+}

@@ -22,5 +22,7 @@ func Router(r *gin.Engine) {
 		zentao.GET("/getAnalysisCustomer", zentao_controllers.GetAnalysisCustomer)
 		zentao.GET("/getAnalysisCustomerDetail", zentao_controllers.GetAnalysisCustomerDetail)
 		zentao.GET("/getAnalysisLeixingDetail", zentao_controllers.GetAnalysisLeixingDetail)
+		zentao.GET("/getAnalysisHeatMapLeixing", zentao_controllers.GetAnalysisHeatMapLeixing)
+		zentao.GET("/getAnalysisHeatMapCustomer", zentao_controllers.GetAnalysisHeatMapCustomer)
 	}
 }

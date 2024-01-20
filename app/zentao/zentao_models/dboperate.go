@@ -157,3 +157,113 @@ func GetAnalysisLeixingDetail(userId uint, project string, dateStart string, dat
 	}
 	return true, &d1, r1.RowsAffected
 }
+
+// GetAnalysisHeatMapLeixing 获取‘问题类型’年度热力图
+func GetAnalysisHeatMapLeixing(userId uint, dateYear string) (bool, *[]LeixingHeatmap, int64) {
+	var d1 []LeixingHeatmap
+	sql := `SELECT cloudname,sum( tt.esti ) esti,month(tt.dat) dateyear,dense_rank() over (order by cloudname) rk
+      		  FROM (SELECT t3.id id,t1.NAME namec,t1.project proj,t3.account acct,t3.DATE dat,t1.estimate esti,t3.consumed cons,t1.type tycc
+      		  		  FROM zt_effort t3
+					  LEFT JOIN zt_task t1 ON t1.id = t3.objectID 
+					 WHERE t1.deleted <> 2 
+					   AND t3.deleted <> 2 
+					   AND t1.STATUS IN ( 'closed', 'done' ) 
+		 			   AND t1.type = 'T0343' 
+					   AND NOT EXISTS ( SELECT 1 FROM zt_task t2 WHERE t2.parent = t1.id AND t2.deleted <> 2 ) 
+					   AND EXISTS (SELECT 1
+      		  		  				 FROM ( SELECT id, ROW_NUMBER() over ( PARTITION BY objectID ORDER BY DATE, id ) rk FROM zt_effort WHERE deleted <> 2 ) t6 
+								    WHERE rk = 1 
+									  AND t6.id = t3.id 
+								 )
+      	     		 UNION ALL
+					SELECT t3.id id,t1.NAME namec,t1.project proj,t3.account acct,t3.DATE dat,0 esti,t3.consumed cons,t1.type tycc 
+					  FROM zt_effort t3
+					  LEFT JOIN zt_task t1 ON t1.id = t3.objectID 
+					 WHERE t1.deleted <> 2 
+					   AND t3.deleted <> 2 
+					   AND t1.STATUS IN ( 'closed', 'done' ) 
+					   AND t1.type = 'T0343' 
+					   AND NOT EXISTS ( SELECT 1 FROM zt_task t2 WHERE t2.parent = t1.id AND t2.deleted <> 2 ) 
+					   AND EXISTS (SELECT 1
+									 FROM ( SELECT id, ROW_NUMBER() over ( PARTITION BY objectID ORDER BY DATE, id ) rk FROM zt_effort WHERE deleted <> 2 ) t6 
+									WHERE rk > 1 
+									  AND t6.id = t3.id 
+								  )
+					 UNION ALL
+					SELECT t3.id id,t1.NAME namec,t1.project proj,t3.account acct,t3.DATE dat,t3.consumed esti,t3.consumed cons,t1.type tycc 
+					  FROM zt_effort t3
+					  LEFT JOIN zt_task t1 ON t1.id = t3.objectID 
+					 WHERE t1.deleted <> 2 
+					   AND t3.deleted <> 2 
+					   AND t1.STATUS IN ( 'closed', 'done' ) 
+					   AND t1.type <> 'T0343' 
+					   AND NOT EXISTS ( SELECT 1 FROM zt_task t2 WHERE t2.parent = t1.id AND t2.deleted <> 2 ) 
+				   ) tt
+			  LEFT JOIN kt_cloud ON cloudid = tt.tycc 
+			 WHERE tt.acct = ?
+			   and year(tt.dat) = ?
+			 GROUP BY tt.tycc,month(tt.dat)
+			 ORDER BY rk,tt.tycc,month(tt.dat)`
+	res := zentao_common.ZENTAO_DB.Raw(sql, userId, dateYear)
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
+
+// GetAnalysisHeatMapCustomer 获取‘客户’年度热力图
+func GetAnalysisHeatMapCustomer(userId uint, dateYear string) (bool, *[]CustomerHeatmap, int64) {
+	var d1 []CustomerHeatmap
+	sql := `SELECT concat(t0.id,'.',t0.name) customername,sum( tt.esti ) esti,month(tt.dat) dateyear,dense_rank() over (order by concat(t0.id,'.',t0.name)) rk
+          	  FROM (SELECT t3.id id,t1.name namec,t1.project proj,t3.account acct,t3.date dat,
+          	               t1.estimate esti,t3.consumed cons,t1.type tycc
+          	          FROM zt_effort t3
+          	          LEFT JOIN zt_task t1 ON t1.id = t3.objectID
+          	         WHERE t1.deleted <> 2
+          	           AND t3.deleted <> 2
+          	           AND t1.status IN ( 'closed', 'done' )
+          	           AND t1.type = 'T0343'
+          	           AND NOT EXISTS (SELECT 1 FROM zt_task t2 WHERE t2.parent = t1.id AND t2.deleted <> 2 )
+          	           AND EXISTS (SELECT 1 FROM (SELECT id,ROW_NUMBER() over ( PARTITION BY objectID ORDER BY date,id) rk
+          	                                        FROM zt_effort
+          	                                       WHERE deleted <> 2 ) t6
+          	                               WHERE rk = 1
+          	                                 AND t6.id = t3.id)
+          	         UNION ALL
+          	        SELECT t3.id id,t1.name namec,t1.project proj,t3.account acct,t3.date dat,
+          	               0 esti,t3.consumed cons,t1.type tycc
+          	          FROM zt_effort t3
+          	          LEFT JOIN zt_task t1 ON t1.id = t3.objectID
+          	         WHERE t1.deleted <> 2
+          	           AND t3.deleted <> 2
+          	           AND t1.status IN ( 'closed', 'done' )
+          	           AND t1.type = 'T0343'
+          	           AND NOT EXISTS (SELECT 1 FROM zt_task t2 WHERE t2.parent = t1.id AND t2.deleted <> 2 )
+          	           AND EXISTS (SELECT 1 FROM (SELECT id,ROW_NUMBER() over ( PARTITION BY objectID ORDER BY date,id) rk
+          	                                        FROM zt_effort
+          	                                       WHERE deleted <> 2 ) t6
+          	                               WHERE rk > 1
+          	                                 AND t6.id = t3.id)
+          	         UNION ALL
+          	        SELECT t3.id id,t1.name namec,t1.project proj,t3.account acct,t3.date dat,
+          	               t3.consumed esti,t3.consumed cons,t1.type tycc
+          	          FROM zt_effort t3
+          	          LEFT JOIN zt_task t1 ON t1.id = t3.objectID
+          	         WHERE t1.deleted <> 2
+          	           AND t3.deleted <> 2
+          	           AND t1.status IN ( 'closed', 'done' )
+          	           AND t1.type <> 'T0343'
+          	           AND NOT EXISTS (SELECT 1 FROM zt_task t2 WHERE t2.parent = t1.id AND t2.deleted <> 2 )) tt
+          	  LEFT JOIN zt_project t0 ON t0.id = tt.proj
+          	 WHERE tt.acct = ?
+			   and year(tt.dat) = ?
+			 GROUP BY concat(t0.id,'.',t0.name),month(tt.dat)
+			 ORDER BY rk,concat(t0.id,'.',t0.name),month(tt.dat)`
+	res := zentao_common.ZENTAO_DB.Raw(sql, userId, dateYear)
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
