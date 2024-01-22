@@ -40,7 +40,7 @@ func GetAnalysisCustomer(userId uint, dateStart string, dateEnd string) (bool, *
 // GetAnalysisCustomerDetail 按照用户、起止时间、类型获取详细客户数据
 func GetAnalysisCustomerDetail(userId uint, type0 string, dateStart string, dateEnd string) (bool, *[]CustomerDetail, int64) {
 	var d1 []CustomerDetail
-	sql := `SELECT proj customername,projid id,namec titlename,dat workdate,esti,cons
+	sql := `SELECT proj customername,id,namec titlename,dat workdate,esti,cons
 			  FROM k_sum
 			 WHERE clid = ?
 			   AND acct = ?
@@ -56,7 +56,7 @@ func GetAnalysisCustomerDetail(userId uint, type0 string, dateStart string, date
 // GetAnalysisLeixingDetail 按照用户、起止时间、客户获取详细类型数据
 func GetAnalysisLeixingDetail(userId uint, project string, dateStart string, dateEnd string) (bool, *[]LeixingDetail, int64) {
 	var d1 []LeixingDetail
-	sql := `SELECT tycc leixing,clid id,namec titlename,dat workdate,esti,cons
+	sql := `SELECT tycc leixing,id,namec titlename,dat workdate,esti,cons
 			  FROM k_sum
 			 WHERE proj = ?
 			   AND acct = ?
