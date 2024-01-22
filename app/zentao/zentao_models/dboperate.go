@@ -24,7 +24,7 @@ func GetAnalysisLeixing(userId uint, dateStart string, dateEnd string) (bool, *[
 // GetAnalysisCustomer 按照用户、起止时间获取‘类型’数据
 func GetAnalysisCustomer(userId uint, dateStart string, dateEnd string) (bool, *[]Customer, int64) {
 	var d1 []Customer
-	sql := `SELECT proj customername,sum(tt.esti) esti,sum(tt.cons) cons
+	sql := `SELECT proj customername,sum(esti) esti,sum(cons) cons
           	  FROM k_sum
           	 WHERE dat BETWEEN ? AND ?
           	   and acct = ?
