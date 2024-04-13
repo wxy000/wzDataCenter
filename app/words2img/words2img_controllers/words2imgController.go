@@ -14,6 +14,7 @@ import (
 
 func CreateImg(ctx *gin.Context) {
 	words := ctx.DefaultQuery("words", "")
+	color := ctx.DefaultQuery("color", "white")
 
 	//高度
 	wordsHeight := 40
@@ -39,7 +40,11 @@ func CreateImg(ctx *gin.Context) {
 	c.SetFontSize(float64(wordsHeight))
 	c.SetClip(img.Bounds())
 	c.SetDst(img)
-	c.SetSrc(image.Black)
+	if color == "white" {
+		c.SetSrc(image.White)
+	} else {
+		c.SetSrc(image.Black)
+	}
 	//设置字体显示位置
 	_, err = c.DrawString(words, freetype.Pt(0, wordsHeight-4))
 	if err != nil {
@@ -70,7 +75,6 @@ func saveFile(pic *image.RGBA) (string, error) {
 	return path, nil
 }
 
-// 将test.pdf转换后的base64字符串写入test.txt文件中
 func fileToBase64(path string) (string, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
