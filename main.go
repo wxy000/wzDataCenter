@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"wzDataCenter/app/inword"
 	"wzDataCenter/app/parser12306"
+	"wzDataCenter/app/words2img"
 	"wzDataCenter/app/zentao"
 	"wzDataCenter/common"
 	"wzDataCenter/conf"
@@ -50,6 +51,9 @@ func main() {
 	}
 	if common.CONF.App.Appparser12306 == "1" {
 		parser12306.Router(r)
+	}
+	if common.CONF.App.Appwords2img == "1" {
+		words2img.Router(r)
 	}
 
 	/*保存配置项到文件*/
