@@ -6,8 +6,9 @@ import (
 )
 
 func Router(r *gin.Engine) {
-	words2img := r.Group("/ImageProcessing")
+	imageProcessing := r.Group("/imageProcessing")
 	{
-		words2img.GET("/createImg", ImageProcessing_controllers.CreateWordsImg)
+		imageProcessing.GET("/createWordsImg", ImageProcessing_controllers.CreateWordsImg)
+		imageProcessing.POST("/createImgWaterMarkWithWordsAndIdio", ImageProcessing_controllers.CreateImgWaterMarkWithWordsAndIdio)
 	}
 }

@@ -6,6 +6,7 @@ require (
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	golang.org/x/time v0.3.0
 	gopkg.in/ini.v1 v1.67.0
 	gorm.io/driver/mysql v1.5.1
