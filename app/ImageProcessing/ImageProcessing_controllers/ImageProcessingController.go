@@ -1,4 +1,4 @@
-package words2img_controllers
+package ImageProcessing_controllers
 
 import (
 	"encoding/base64"
@@ -14,7 +14,8 @@ import (
 	"wzDataCenter/common"
 )
 
-func CreateImg(ctx *gin.Context) {
+// CreateWordsImg 输入文字生成图片
+func CreateWordsImg(ctx *gin.Context) {
 	words := ctx.DefaultQuery("words", "")
 	color := ctx.DefaultQuery("color", "white")
 
@@ -40,7 +41,7 @@ func CreateImg(ctx *gin.Context) {
 	img := image.NewRGBA(image.Rect(0, 0, wordsWidth, wordsHeight))
 
 	//读字体
-	fontBytes, err := ioutil.ReadFile("./app/words2img/fonts/康熙字典美化体.ttf")
+	fontBytes, err := ioutil.ReadFile("./app/ImageProcessing/fonts/康熙字典美化体.ttf")
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 	}
@@ -66,7 +67,7 @@ func CreateImg(ctx *gin.Context) {
 		common.FailWithMsg(err.Error(), ctx)
 	}
 	//保存
-	path, err := saveFile(img)
+	path, err := saveFile(img, "./app/ImageProcessing/tmp/words.png")
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 	}
@@ -77,8 +78,7 @@ func CreateImg(ctx *gin.Context) {
 	common.OkWithData(base64file, ctx)
 }
 
-func saveFile(pic *image.RGBA) (string, error) {
-	path := "./app/words2img/tmp/words.png"
+func saveFile(pic *image.RGBA, path string) (string, error) {
 	dstFile, _ := os.Create(path)
 	defer dstFile.Close()
 
@@ -97,4 +97,18 @@ func fileToBase64(path string) (string, error) {
 	}
 	base64Str := base64.StdEncoding.EncodeToString(data)
 	return base64Str, nil
+}
+
+func base64ToFile(base64Str string, outputPath string) error {
+	// 解码base64字符串
+	data, err := base64.StdEncoding.DecodeString(base64Str)
+	if err != nil {
+		return err
+	}
+	// 将解码的数据写入文件
+	err = ioutil.WriteFile(outputPath, data, 0666)
+	if err != nil {
+		return err
+	}
+	return nil
 }
