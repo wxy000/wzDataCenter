@@ -94,7 +94,12 @@ func CreateImgWaterMarkWithWordsAndIdio(ctx *gin.Context) {
 	//按比例缩小idio和words
 	imgIdioDx := imgIdio.Bounds().Dx()
 	imgIdioDy := imgIdio.Bounds().Dy()
-	newImgIdioDx := width / 9
+	newImgIdioDx := width / 6
+	if width > height {
+		newImgIdioDx = width / 6
+	} else {
+		newImgIdioDx = width / 4
+	}
 	newImgIdioDy := float64(imgIdioDy) / float64(imgIdioDx) * float64(newImgIdioDx)
 	/*newImgIdio := image.NewRGBA(image.Rect(0, 0, newImgIdioDx, int(newImgIdioDy)))
 	draw.Draw(newImgIdio, newImgIdio.Bounds(), imgIdio, image.Point{}, draw.Src)*/
@@ -111,11 +116,21 @@ func CreateImgWaterMarkWithWordsAndIdio(ctx *gin.Context) {
 	//合成到背景上
 	//定位
 	if rules == "v" {
-		draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdioDx) / 2, Y: height - int(newImgIdioDy*1.5)}), newImgIdio, image.Point{}, draw.Src)
-		draw.Draw(img, img.Bounds().Add(image.Point{X: (width - int(newImgWordsDx)) / 2, Y: height - int(newImgIdioDy*1.5+newImgWordsDy)}), newImgWords, image.Point{}, draw.Src)
+		if width > height {
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdioDx) / 2, Y: height - int(newImgIdioDy*1.5)}), newImgIdio, image.Point{}, draw.Src)
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - int(newImgWordsDx)) / 2, Y: height - int(newImgIdioDy*1.5+newImgWordsDy)}), newImgWords, image.Point{}, draw.Src)
+		} else {
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdioDx) / 2, Y: height - int(newImgIdioDy*3)}), newImgIdio, image.Point{}, draw.Src)
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - int(newImgWordsDx)) / 2, Y: height - int(newImgIdioDy*3+newImgWordsDy)}), newImgWords, image.Point{}, draw.Src)
+		}
 	} else {
 		x := (float64(width) - float64(newImgIdioDx) - newImgWordsDx) / 2
 		y := float64(height) - newImgIdioDy*1.5
+		if width > height {
+			y = float64(height) - newImgIdioDy*1.5
+		} else {
+			y = float64(height) - newImgIdioDy*3
+		}
 		draw.Draw(img, img.Bounds().Add(image.Point{X: int(x), Y: int(y)}), newImgWords, image.Point{}, draw.Src)
 		draw.Draw(img, img.Bounds().Add(image.Point{X: int(x + newImgWordsDx + 10), Y: int(y)}), newImgIdio, image.Point{}, draw.Src)
 	}
@@ -159,7 +174,7 @@ func words2Img(words string, color string) (string, error) {
 	img := image.NewRGBA(image.Rect(0, 0, wordsWidth, wordsHeight))
 
 	//读字体
-	fontBytes, err := ioutil.ReadFile("./app/ImageProcessing/fonts/康熙字典美化体.ttf")
+	fontBytes, err := ioutil.ReadFile("./app/ImageProcessing/fonts/方正硬笔行书繁体.ttf")
 	if err != nil {
 		return "", err
 	}
