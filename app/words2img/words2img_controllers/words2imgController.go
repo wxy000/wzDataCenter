@@ -2,12 +2,14 @@ package words2img_controllers
 
 import (
 	"encoding/base64"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/freetype"
 	"image"
 	"image/png"
 	"io/ioutil"
 	"os"
+	"strings"
 	"unicode/utf8"
 	"wzDataCenter/common"
 )
@@ -16,11 +18,24 @@ func CreateImg(ctx *gin.Context) {
 	words := ctx.DefaultQuery("words", "")
 	color := ctx.DefaultQuery("color", "white")
 
+	//定义一个包含所有ascii字符的字符串
+	asciiChs := ""
+	for i := 32; i < 127; i++ {
+		asciiChs += fmt.Sprintf("%c", i)
+	}
+	//检查所有ascii字符的个数
+	nohanzi := 0
+	for _, ch := range words {
+		if strings.ContainsRune(asciiChs, ch) {
+			nohanzi += 1
+		}
+	}
+
 	//高度
 	wordsHeight := 40
-	//宽度
+	//宽度（ascii字符只占大概一半汉字的宽度）
 	wordsLen := utf8.RuneCountInString(words)
-	wordsWidth := wordsLen*wordsHeight + 1
+	wordsWidth := (wordsLen-nohanzi/2)*wordsHeight + 1
 	//创建画布
 	img := image.NewRGBA(image.Rect(0, 0, wordsWidth, wordsHeight))
 
@@ -46,7 +61,7 @@ func CreateImg(ctx *gin.Context) {
 		c.SetSrc(image.Black)
 	}
 	//设置字体显示位置
-	_, err = c.DrawString(words, freetype.Pt(0, wordsHeight-4))
+	_, err = c.DrawString(words, freetype.Pt(0, wordsHeight-6))
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 	}
