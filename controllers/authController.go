@@ -20,6 +20,7 @@ func AuthHandler(ctx *gin.Context) {
 		err := ctx.BindJSON(&login)
 		if err != nil {
 			common.FailWithMsg(err.Error(), ctx)
+			return
 		}
 		username = login.Username
 		password = login.Password
@@ -63,6 +64,7 @@ func UpdateUserInfo(ctx *gin.Context) {
 		_, userNew, err := models.GetUserInfoByID(userid)
 		if err != nil {
 			common.FailWithMsg(err.Error(), ctx)
+			return
 		}
 		// 生成新的Token
 		tokenNew, _ := utils.NewJWT().GenToken(*userNew)

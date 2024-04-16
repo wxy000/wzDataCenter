@@ -25,6 +25,7 @@ func CreateWordsImg(ctx *gin.Context) {
 	base64file, err := words2Img(words, color)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 	common.OkWithData(base64file, ctx)
 }
@@ -41,12 +42,14 @@ func CreateImgWaterMarkWithWordsAndIdio(ctx *gin.Context) {
 	height, _ := strconv.Atoi(heighttmp)
 	if width == 0 || height == 0 {
 		common.FailWithMsg("请传入正确的图片长宽！", ctx)
+		return
 	}
 
 	//将传入的文字转为图片
 	base64fileWords, err := words2Img(words, color)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 
 	//将base64转为图片并暂存
@@ -54,30 +57,36 @@ func CreateImgWaterMarkWithWordsAndIdio(ctx *gin.Context) {
 	err = base64ToFile(idio, idioPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 	wordsPath := "./app/ImageProcessing/tmp/words.png"
 	err = base64ToFile(base64fileWords, wordsPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 
 	//加载图片
 	imgIdioOpen, err := os.Open(idioPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 	imgIdio, err := png.Decode(imgIdioOpen)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 
 	imgWordsOpen, err := os.Open(wordsPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 	imgWords, err := png.Decode(imgWordsOpen)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 
 	//创建一个原图大小的透明图片
@@ -115,10 +124,12 @@ func CreateImgWaterMarkWithWordsAndIdio(ctx *gin.Context) {
 	path, err := saveFile(img, "./app/ImageProcessing/tmp/waterMark.png")
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 	base64file, err := fileToBase64(path)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 
 	common.OkWithData(base64file, ctx)

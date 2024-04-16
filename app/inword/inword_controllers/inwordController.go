@@ -86,6 +86,7 @@ func GetRandomWords(ctx *gin.Context) {
 	fileHanle, err := os.OpenFile(filepath, os.O_RDONLY, 0666)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 	defer fileHanle.Close()
 
@@ -134,6 +135,7 @@ func GetRandomImgs(ctx *gin.Context) {
 	fileHanle, err := os.OpenFile(filepath, os.O_RDONLY, 0666)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
+		return
 	}
 	defer fileHanle.Close()
 
