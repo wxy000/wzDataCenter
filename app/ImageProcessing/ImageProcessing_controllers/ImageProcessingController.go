@@ -2,6 +2,7 @@ package ImageProcessing_controllers
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/freetype"
@@ -22,7 +23,10 @@ func CreateWordsImg(ctx *gin.Context) {
 	words := ctx.DefaultQuery("words", "")
 	color := ctx.DefaultQuery("color", "white")
 
-	base64file, err := words2Img(words, color)
+	fontPath := "./app/ImageProcessing/fonts/方正硬笔行书繁体.ttf"
+	outputPath := "./app/ImageProcessing/tmp/words.png"
+
+	base64file, err := words2Img(words, color, fontPath, outputPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 		return
@@ -44,95 +48,135 @@ func CreateImgWaterMarkWithWordsAndIdio(ctx *gin.Context) {
 		common.FailWithMsg("请传入正确的图片长宽！", ctx)
 		return
 	}
-
-	//将传入的文字转为图片
-	base64fileWords, err := words2Img(words, color)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-		return
-	}
-
-	//将base64转为图片并暂存
-	idioPath := "./app/ImageProcessing/tmp/idio.png"
-	err = base64ToFile(idio, idioPath)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-		return
-	}
-	wordsPath := "./app/ImageProcessing/tmp/words.png"
-	err = base64ToFile(base64fileWords, wordsPath)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-		return
-	}
-
-	//加载图片
-	imgIdioOpen, err := os.Open(idioPath)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-		return
-	}
-	imgIdio, err := png.Decode(imgIdioOpen)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-		return
-	}
-
-	imgWordsOpen, err := os.Open(wordsPath)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
-		return
-	}
-	imgWords, err := png.Decode(imgWordsOpen)
-	if err != nil {
-		common.FailWithMsg(err.Error(), ctx)
+	if words == "" && idio == "" {
+		common.FailWithMsg("拍摄地址没有，签名也没有，还整啥水印啊！？", ctx)
 		return
 	}
 
 	//创建一个原图大小的透明图片
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	//按比例缩小idio和words
-	imgIdioDx := imgIdio.Bounds().Dx()
-	imgIdioDy := imgIdio.Bounds().Dy()
-	newImgIdioDx := width / 6
-	if width > height {
-		newImgIdioDx = width / 6
-	} else {
-		newImgIdioDx = width / 4
+
+	//只存在签名
+	if (words == "" && len(words) == 0) && (idio != "" && len(idio) != 0) {
+		//将base64转为图片并暂存
+		idioPath := "./app/ImageProcessing/tmp/idio.png"
+		err := base64ToFile(idio, idioPath)
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
+		}
+
+		//缩放图片
+		newImgIdioDx := width / 6
+		if width > height {
+			newImgIdioDx = width / 6
+		} else {
+			newImgIdioDx = width / 4
+		}
+		newImgIdio, err := resizeImg(idioPath, newImgIdioDx, 0)
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
+		}
+
+		if width > height {
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdioDx) / 2, Y: height - int(float64(newImgIdio.Bounds().Dy())*1.5)}), newImgIdio, image.Point{}, draw.Src)
+		} else {
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdioDx) / 2, Y: height - int(float64(newImgIdio.Bounds().Dy())*3)}), newImgIdio, image.Point{}, draw.Src)
+		}
 	}
-	newImgIdioDy := float64(imgIdioDy) / float64(imgIdioDx) * float64(newImgIdioDx)
-	/*newImgIdio := image.NewRGBA(image.Rect(0, 0, newImgIdioDx, int(newImgIdioDy)))
-	draw.Draw(newImgIdio, newImgIdio.Bounds(), imgIdio, image.Point{}, draw.Src)*/
-	newImgIdio := resize.Resize(uint(newImgIdioDx), uint(newImgIdioDy), imgIdio, resize.Bilinear)
 
-	imgWordsDx := imgWords.Bounds().Dx()
-	imgWordsDy := imgWords.Bounds().Dy()
-	newImgWordsDy := newImgIdioDy
-	newImgWordsDx := float64(imgWordsDx) / float64(imgWordsDy) * float64(newImgWordsDy)
-	/*newImgWords := image.NewRGBA(image.Rect(0, 0, int(newImgWordsDx), int(newImgWordsDy)))
-	draw.Draw(newImgWords, newImgWords.Bounds(), imgWords, image.Point{}, draw.Src)*/
-	newImgWords := resize.Resize(uint(newImgWordsDx), uint(newImgWordsDy), imgWords, resize.Bilinear)
+	//只存在地址
+	if (words != "" && len(words) != 0) && (idio == "" && len(idio) == 0) {
+		fontPath := "./app/ImageProcessing/fonts/方正硬笔行书繁体.ttf"
+		wordsPath := "./app/ImageProcessing/tmp/words.png"
 
-	//合成到背景上
-	//定位
-	if rules == "v" {
-		if width > height {
-			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdioDx) / 2, Y: height - int(newImgIdioDy*1.5)}), newImgIdio, image.Point{}, draw.Src)
-			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - int(newImgWordsDx)) / 2, Y: height - int(newImgIdioDy*1.5+newImgWordsDy)}), newImgWords, image.Point{}, draw.Src)
-		} else {
-			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdioDx) / 2, Y: height - int(newImgIdioDy*3)}), newImgIdio, image.Point{}, draw.Src)
-			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - int(newImgWordsDx)) / 2, Y: height - int(newImgIdioDy*3+newImgWordsDy)}), newImgWords, image.Point{}, draw.Src)
+		//将传入的文字转为图片
+		_, err := words2Img(words, color, fontPath, wordsPath)
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
 		}
-	} else {
-		x := (float64(width) - float64(newImgIdioDx) - newImgWordsDx) / 2
-		y := float64(height) - newImgIdioDy*1.5
+
+		//缩放图片
+		newImgWordsDx := width / 6
 		if width > height {
-			y = float64(height) - newImgIdioDy*1.5
+			newImgWordsDx = width / 6
 		} else {
-			y = float64(height) - newImgIdioDy*3
+			newImgWordsDx = width / 4
 		}
-		draw.Draw(img, img.Bounds().Add(image.Point{X: int(x), Y: int(y)}), newImgWords, image.Point{}, draw.Src)
-		draw.Draw(img, img.Bounds().Add(image.Point{X: int(x + newImgWordsDx + 10), Y: int(y)}), newImgIdio, image.Point{}, draw.Src)
+		newImgWords, err := resizeImg(wordsPath, newImgWordsDx, 0)
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
+		}
+
+		if width > height {
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgWordsDx) / 2, Y: height - int(float64(newImgWords.Bounds().Dy())*1.5)}), newImgWords, image.Point{}, draw.Src)
+		} else {
+			draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgWordsDx) / 2, Y: height - int(float64(newImgWords.Bounds().Dy())*3)}), newImgWords, image.Point{}, draw.Src)
+		}
+	}
+
+	//签名、地址都存在
+	if (words != "" && len(words) != 0) && (idio != "" && len(idio) != 0) {
+		/*****************签名*****************/
+		//将base64转为图片并暂存
+		idioPath := "./app/ImageProcessing/tmp/idio.png"
+		err := base64ToFile(idio, idioPath)
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
+		}
+		//缩放图片
+		newImgIdioDx := width / 6
+		if width > height {
+			newImgIdioDx = width / 6
+		} else {
+			newImgIdioDx = width / 4
+		}
+		newImgIdio, err := resizeImg(idioPath, newImgIdioDx, 0)
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
+		}
+		/*****************签名*****************/
+		/*****************地址*****************/
+		fontPath := "./app/ImageProcessing/fonts/方正硬笔行书繁体.ttf"
+		wordsPath := "./app/ImageProcessing/tmp/words.png"
+		//将传入的文字转为图片
+		_, err = words2Img(words, color, fontPath, wordsPath)
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
+		}
+		newImgWords, err := resizeImg(wordsPath, 0, newImgIdio.Bounds().Dy())
+		if err != nil {
+			common.FailWithMsg(err.Error(), ctx)
+			return
+		}
+		/*****************地址*****************/
+		//合成到背景上
+		//定位
+		if rules == "v" {
+			if width > height {
+				draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdio.Bounds().Dx()) / 2, Y: height - int(float64(newImgIdio.Bounds().Dy())*1.5)}), newImgIdio, image.Point{}, draw.Src)
+				draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgWords.Bounds().Dx()) / 2, Y: height - int(float64(newImgIdio.Bounds().Dy())*1.5+float64(newImgWords.Bounds().Dy()))}), newImgWords, image.Point{}, draw.Src)
+			} else {
+				draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgIdio.Bounds().Dx()) / 2, Y: height - newImgIdio.Bounds().Dy()*3}), newImgIdio, image.Point{}, draw.Src)
+				draw.Draw(img, img.Bounds().Add(image.Point{X: (width - newImgWords.Bounds().Dx()) / 2, Y: height - newImgIdio.Bounds().Dy()*3 - newImgWords.Bounds().Dy()}), newImgWords, image.Point{}, draw.Src)
+			}
+		} else {
+			x := (width - newImgIdio.Bounds().Dx() - newImgWords.Bounds().Dx()) / 2
+			y := float64(height) - float64(newImgIdio.Bounds().Dy())*1.5
+			if width > height {
+				y = float64(height) - float64(newImgIdio.Bounds().Dy())*1.5
+			} else {
+				y = float64(height) - float64(newImgIdio.Bounds().Dy())*3
+			}
+			draw.Draw(img, img.Bounds().Add(image.Point{X: x, Y: int(y)}), newImgWords, image.Point{}, draw.Src)
+			draw.Draw(img, img.Bounds().Add(image.Point{X: x + newImgWords.Bounds().Dx() + 10, Y: int(y)}), newImgIdio, image.Point{}, draw.Src)
+		}
 	}
 
 	//保存
@@ -150,8 +194,42 @@ func CreateImgWaterMarkWithWordsAndIdio(ctx *gin.Context) {
 	common.OkWithData(base64file, ctx)
 }
 
+// 调整图片大小
+func resizeImg(imgPath string, afterWidth int, afterHeight int) (image.Image, error) {
+	if afterWidth == 0 && afterHeight == 0 {
+		return nil, errors.New("长宽都是0，那不没了吗？还调个屁啊")
+	}
+
+	//加载图片
+	imgOpen, err := os.Open(imgPath)
+	if err != nil {
+		return nil, err
+	}
+	imgDecode, err := png.Decode(imgOpen)
+	if err != nil {
+		return nil, err
+	}
+
+	//获取原图大小
+	imgDx := imgDecode.Bounds().Dx()
+	imgDy := imgDecode.Bounds().Dy()
+
+	imgDxNew := afterWidth
+	imgDyNew := afterHeight
+
+	//如果只传了width或者height，则按比例调整
+	if afterWidth != 0 && afterHeight == 0 {
+		imgDyNew = int(float64(imgDy) / float64(imgDx) * float64(afterWidth))
+	}
+	if afterWidth == 0 && afterHeight != 0 {
+		imgDxNew = int(float64(imgDx) / float64(imgDy) * float64(afterHeight))
+	}
+
+	return resize.Resize(uint(imgDxNew), uint(imgDyNew), imgDecode, resize.Bilinear), nil
+}
+
 // 传入文字、颜色，生成透明图片，并返回base64串
-func words2Img(words string, color string) (string, error) {
+func words2Img(words string, color string, fontPath string, outputPath string) (string, error) {
 	//定义一个包含所有ascii字符的字符串
 	asciiChs := ""
 	for i := 32; i < 127; i++ {
@@ -174,7 +252,7 @@ func words2Img(words string, color string) (string, error) {
 	img := image.NewRGBA(image.Rect(0, 0, wordsWidth, wordsHeight))
 
 	//读字体
-	fontBytes, err := ioutil.ReadFile("./app/ImageProcessing/fonts/方正硬笔行书繁体.ttf")
+	fontBytes, err := ioutil.ReadFile(fontPath)
 	if err != nil {
 		return "", err
 	}
@@ -201,7 +279,7 @@ func words2Img(words string, color string) (string, error) {
 		return "", err
 	}
 	//保存
-	path, err := saveFile(img, "./app/ImageProcessing/tmp/words.png")
+	path, err := saveFile(img, outputPath)
 	if err != nil {
 		return "", err
 	}
