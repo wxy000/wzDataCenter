@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"wzDataCenter/app/ImageProcessing"
+	"wzDataCenter/app/imageProcessing"
 	"wzDataCenter/app/inword"
 	"wzDataCenter/app/parser12306"
 	"wzDataCenter/app/zentao"
@@ -53,7 +53,7 @@ func main() {
 		parser12306.Router(r)
 	}
 	if common.CONF.App.Appimageprocessing == "1" {
-		ImageProcessing.Router(r)
+		imageProcessing.Router(r)
 	}
 
 	/*保存配置项到文件*/
