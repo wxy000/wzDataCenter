@@ -2,7 +2,6 @@ package imageProcessing_service
 
 import (
 	"errors"
-	"fmt"
 	"github.com/golang/freetype"
 	"github.com/nfnt/resize"
 	"image"
@@ -10,7 +9,6 @@ import (
 	"image/png"
 	"io/ioutil"
 	"os"
-	"strings"
 	"unicode/utf8"
 	"wzDataCenter/utils"
 )
@@ -98,24 +96,12 @@ func ResizeImg(imgPath string, afterWidth int, afterHeight int) (image.Image, er
 
 // Words2Img 传入文字、颜色，生成透明图片，并返回base64串
 func Words2Img(words string, color string, fontPath string, outputPath string) (string, error) {
-	//定义一个包含所有ascii字符的字符串
-	asciiChs := ""
-	for i := 32; i < 127; i++ {
-		asciiChs += fmt.Sprintf("%c", i)
-	}
-	//检查所有ascii字符的个数
-	nohanzi := 0
-	for _, ch := range words {
-		if strings.ContainsRune(asciiChs, ch) {
-			nohanzi += 1
-		}
-	}
 
 	//高度
 	wordsHeight := 40
 	//宽度（ascii字符只占大概一半汉字的宽度）
 	wordsLen := utf8.RuneCountInString(words)
-	wordsWidth := (wordsLen-nohanzi/2)*wordsHeight + 1
+	wordsWidth := wordsLen*wordsHeight + 1
 	//创建画布
 	img := image.NewRGBA(image.Rect(0, 0, wordsWidth, wordsHeight))
 
@@ -146,8 +132,58 @@ func Words2Img(words string, color string, fontPath string, outputPath string) (
 	if err != nil {
 		return "", err
 	}
+
+	//切掉透明的部分
+	bounds := img.Bounds()
+	x1 := 0
+	y1 := 0
+	x2 := 0
+	y2 := 0
+outloop1:
+	for x := bounds.Min.X; x < bounds.Max.X; x++ {
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			_, _, _, a := img.At(x, y).RGBA()
+			if a > 0 {
+				x1 = x
+				break outloop1
+			}
+		}
+	}
+outloop2:
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			_, _, _, a := img.At(x, y).RGBA()
+			if a > 0 {
+				y1 = y
+				break outloop2
+			}
+		}
+	}
+outloop3:
+	for x := bounds.Max.X; x > bounds.Min.X; x-- {
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			_, _, _, a := img.At(x, y).RGBA()
+			if a > 0 {
+				x2 = x + 1
+				break outloop3
+			}
+		}
+	}
+outloop4:
+	for y := bounds.Max.Y; y > bounds.Min.Y; y-- {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			_, _, _, a := img.At(x, y).RGBA()
+			if a > 0 {
+				y2 = y + 1
+				break outloop4
+			}
+		}
+	}
+
+	subImg := img.SubImage(image.Rect(x1, y1, x2, y2)).(*image.RGBA)
+
 	//保存
-	path, err := SaveFile(img, outputPath)
+	path, err := SaveFile(subImg, outputPath)
 	if err != nil {
 		return "", err
 	}
