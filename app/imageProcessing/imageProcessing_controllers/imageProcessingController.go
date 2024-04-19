@@ -244,98 +244,97 @@ func createImgWaterMark(waterMarkStruct typeWaterMarkStruct) (string, error) {
 	}
 
 	fontPath := "./app/imageProcessing/fonts/方正硬笔行书繁体.ttf"
-
-	if len(waterMarkStruct.WaterMarkFiles) <= 0 {
-		return "", errors.New("啥都不传？那还搞什么水印")
-	}
-
-	//地址数组
-	var filesPath []string
-	for key, value := range waterMarkStruct.WaterMarkFiles {
-		fileType := value[:1]
-		fileContent := value[1:]
-		if fileContent == "" || len(fileContent) == 0 {
-			return "", errors.New("不得传入空内容")
-		}
-		filePath := "./app/imageProcessing/tmp/waterMarkFile" + strconv.Itoa(key) + ".png"
-		if fileType == "W" {
-			//将传入的文字转为图片
-			_, err := imageProcessing_service.Words2Img(fileContent, waterMarkStruct.Color, fontPath, filePath)
-			if err != nil {
-				return "", err
-			}
-		} else if fileType == "T" {
-			//将base64转为图片并暂存
-			err := imageProcessing_service.Base64ToFile(fileContent, filePath)
-			if err != nil {
-				return "", err
-			}
-		} else {
-			return "", errors.New("传入文件类型有误，请检查")
-		}
-		filesPath = append(filesPath, filePath)
-	}
-
-	//缩放图片
-	length := 0
-	if waterMarkStruct.Size == 0 {
-		if waterMarkStruct.Width > waterMarkStruct.Height {
-			length = waterMarkStruct.Height / 20
-		} else {
-			length = waterMarkStruct.Width / 20
-		}
-	} else {
-		length = waterMarkStruct.Size
-	}
-	allWidth := 0
-	allHeight := 0
-	if waterMarkStruct.Rules == "V" {
-		allHeight = length * len(filesPath)
-		for _, filePath := range filesPath {
-			newFile, err := imageProcessing_service.ResizeImg(filePath, 0, length)
-			if err != nil {
-				return "", err
-			}
-			if allWidth < newFile.Bounds().Dx() {
-				allWidth = newFile.Bounds().Dx()
-			}
-		}
-	} else if waterMarkStruct.Rules == "H" {
-		allHeight = length
-		for _, filePath := range filesPath {
-			newFile, err := imageProcessing_service.ResizeImg(filePath, 0, length)
-			if err != nil {
-				return "", err
-			}
-			allWidth = allWidth + newFile.Bounds().Dx()
-		}
-	} else {
-		return "", errors.New("请输入H或V")
-	}
-	//创建组合水印
-	xxtmp := 0
-	imgTmp := image.NewRGBA(image.Rect(0, 0, allWidth, allHeight))
-	for seq, filePath := range filesPath {
-		newFile, err := imageProcessing_service.ResizeImg(filePath, 0, length)
-		if err != nil {
-			return "", err
-		}
-		if waterMarkStruct.Rules == "V" {
-			imageProcessing_service.SetLittleWaterMarkToBG(imgTmp, newFile, 0, "0", (allWidth-newFile.Bounds().Dx())/2, newFile.Bounds().Dy()*seq)
-		}
-		if waterMarkStruct.Rules == "H" {
-			imageProcessing_service.SetLittleWaterMarkToBG(imgTmp, newFile, 0, "0", xxtmp, 0)
-			xxtmp = xxtmp + newFile.Bounds().Dx()
-		}
-	}
-
 	waterMarkPath := "./app/imageProcessing/tmp/waterMark.png"
 
 	//创建一个原图大小的透明图片
 	img := image.NewRGBA(image.Rect(0, 0, waterMarkStruct.Width, waterMarkStruct.Height))
 
-	//定位
-	imageProcessing_service.SetLittleWaterMarkToBG(img, imgTmp, 0.06, waterMarkStruct.Position, waterMarkStruct.X, waterMarkStruct.Y)
+	if len(waterMarkStruct.WaterMarkFiles) > 0 {
+		//地址数组
+		var filesPath []string
+		for key, value := range waterMarkStruct.WaterMarkFiles {
+			fileType := value[:1]
+			fileContent := value[1:]
+			if fileContent != "" && len(fileContent) > 0 {
+				filePath := "./app/imageProcessing/tmp/waterMarkFile" + strconv.Itoa(key) + ".png"
+				if fileType == "W" {
+					//将传入的文字转为图片
+					_, err := imageProcessing_service.Words2Img(fileContent, waterMarkStruct.Color, fontPath, filePath)
+					if err != nil {
+						return "", err
+					}
+				} else if fileType == "T" {
+					//将base64转为图片并暂存
+					err := imageProcessing_service.Base64ToFile(fileContent, filePath)
+					if err != nil {
+						return "", err
+					}
+				} else {
+					return "", errors.New("传入文件类型有误，请检查")
+				}
+				filesPath = append(filesPath, filePath)
+			}
+		}
+
+		//缩放图片
+		length := 0
+		if waterMarkStruct.Size == 0 {
+			if waterMarkStruct.Width > waterMarkStruct.Height {
+				length = waterMarkStruct.Height / 20
+			} else {
+				length = waterMarkStruct.Width / 20
+			}
+		} else {
+			length = waterMarkStruct.Size
+		}
+		allWidth := 0
+		allHeight := 0
+		filesPathNum := len(filesPath) //文件个数
+		if waterMarkStruct.Rules == "V" {
+			allHeight = length * filesPathNum
+			for _, filePath := range filesPath {
+				newFile, err := imageProcessing_service.ResizeImg(filePath, 0, length)
+				if err != nil {
+					return "", err
+				}
+				if allWidth < newFile.Bounds().Dx() {
+					allWidth = newFile.Bounds().Dx()
+				}
+			}
+		} else if waterMarkStruct.Rules == "H" {
+			allHeight = length
+			for _, filePath := range filesPath {
+				newFile, err := imageProcessing_service.ResizeImg(filePath, 0, length)
+				if err != nil {
+					return "", err
+				}
+				allWidth = allWidth + newFile.Bounds().Dx()
+			}
+		} else {
+			return "", errors.New("请输入H或V")
+		}
+
+		if filesPathNum > 0 {
+			//创建组合水印
+			xxtmp := 0
+			imgTmp := image.NewRGBA(image.Rect(0, 0, allWidth, allHeight))
+			for seq, filePath := range filesPath {
+				newFile, err := imageProcessing_service.ResizeImg(filePath, 0, length)
+				if err != nil {
+					return "", err
+				}
+				if waterMarkStruct.Rules == "V" {
+					imageProcessing_service.SetLittleWaterMarkToBG(imgTmp, newFile, 0, "0", (allWidth-newFile.Bounds().Dx())/2, newFile.Bounds().Dy()*seq)
+				}
+				if waterMarkStruct.Rules == "H" {
+					imageProcessing_service.SetLittleWaterMarkToBG(imgTmp, newFile, 0, "0", xxtmp, 0)
+					xxtmp = xxtmp + newFile.Bounds().Dx()
+				}
+			}
+			//定位
+			imageProcessing_service.SetLittleWaterMarkToBG(img, imgTmp, 0.06, waterMarkStruct.Position, waterMarkStruct.X, waterMarkStruct.Y)
+		}
+	}
 
 	//保存
 	path, err := imageProcessing_service.SaveFile(img, waterMarkPath)
