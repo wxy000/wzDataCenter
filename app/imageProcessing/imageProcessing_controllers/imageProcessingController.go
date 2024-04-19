@@ -19,6 +19,7 @@ type typeWaterMarkStruct struct {
 	Position       string   `json:"position"`
 	X              int      `json:"x"`
 	Y              int      `json:"y"`
+	WordDirection  string   `json:"wordDirection"`
 	WaterMarkFiles []string `json:"waterMarkFiles"`
 }
 
@@ -26,11 +27,12 @@ type typeWaterMarkStruct struct {
 func CreateWordsImg(ctx *gin.Context) {
 	words := ctx.DefaultQuery("words", "")
 	color := ctx.DefaultQuery("color", "white")
+	wordDirection := ctx.DefaultQuery("wordDirection", "H")
 
 	fontPath := "./app/imageProcessing/fonts/方正硬笔行书繁体.ttf"
 	outputPath := "./app/imageProcessing/tmp/words.png"
 
-	base64file, err := imageProcessing_service.Words2Img(words, color, fontPath, outputPath)
+	base64file, err := imageProcessing_service.Words2Img(words, color, wordDirection, fontPath, outputPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 		return
@@ -40,10 +42,11 @@ func CreateWordsImg(ctx *gin.Context) {
 
 // CreateImgWaterMarkWithWords 创建水印
 func CreateImgWaterMarkWithWords(ctx *gin.Context) {
-	widthtmp := ctx.DefaultPostForm("width", "0")    //原图宽度
-	heighttmp := ctx.DefaultPostForm("height", "0")  //原图高度
-	words := ctx.DefaultPostForm("words", "")        //文字
-	color := ctx.DefaultPostForm("color", "white")   //颜色（黑白）
+	widthtmp := ctx.DefaultPostForm("width", "0")   //原图宽度
+	heighttmp := ctx.DefaultPostForm("height", "0") //原图高度
+	words := ctx.DefaultPostForm("words", "")       //文字
+	color := ctx.DefaultPostForm("color", "white")  //颜色（黑白）
+	wordDirection := ctx.DefaultPostForm("wordDirection", "H")
 	sizetmp := ctx.DefaultPostForm("size", "0")      //水印大小
 	position := ctx.DefaultPostForm("position", "8") //水印在原图的定位
 	xtmp := ctx.DefaultPostForm("x", "0")            //水印x轴
@@ -68,7 +71,7 @@ func CreateImgWaterMarkWithWords(ctx *gin.Context) {
 	waterMarkPath := "./app/imageProcessing/tmp/waterMark.png"
 
 	//将传入的文字转为图片
-	_, err := imageProcessing_service.Words2Img(words, color, fontPath, wordsPath)
+	_, err := imageProcessing_service.Words2Img(words, color, wordDirection, fontPath, wordsPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 		return
@@ -186,15 +189,16 @@ func CreateImgWaterMarkWithIdio(ctx *gin.Context) {
 
 // CreateImgWaterMarkFORM 以表单方式传入参数
 func CreateImgWaterMarkFORM(ctx *gin.Context) {
-	widthtmp := ctx.DefaultPostForm("width", "0")            //原图宽度
-	heighttmp := ctx.DefaultPostForm("height", "0")          //原图高度
-	color := ctx.DefaultPostForm("color", "white")           //颜色（黑白）
-	rules := ctx.DefaultPostForm("rules", "H")               //排列规则（水平或垂直）
-	sizetmp := ctx.DefaultPostForm("size", "0")              //水印大小
-	position := ctx.DefaultPostForm("position", "8")         //水印在原图的定位
-	xtmp := ctx.DefaultPostForm("x", "0")                    //水印x轴
-	ytmp := ctx.DefaultPostForm("y", "0")                    //水印y轴
-	waterMarkFilesArr := ctx.PostFormArray("waterMarkFiles") //水印文件
+	widthtmp := ctx.DefaultPostForm("width", "0")              //原图宽度
+	heighttmp := ctx.DefaultPostForm("height", "0")            //原图高度
+	color := ctx.DefaultPostForm("color", "white")             //颜色（黑白）
+	wordDirection := ctx.DefaultPostForm("wordDirection", "H") //文字排列方向（水平或垂直）
+	rules := ctx.DefaultPostForm("rules", "H")                 //排列规则（水平或垂直）
+	sizetmp := ctx.DefaultPostForm("size", "0")                //水印大小
+	position := ctx.DefaultPostForm("position", "8")           //水印在原图的定位
+	xtmp := ctx.DefaultPostForm("x", "0")                      //水印x轴
+	ytmp := ctx.DefaultPostForm("y", "0")                      //水印y轴
+	waterMarkFilesArr := ctx.PostFormArray("waterMarkFiles")   //水印文件
 	width, _ := strconv.Atoi(widthtmp)
 	height, _ := strconv.Atoi(heighttmp)
 	size, _ := strconv.Atoi(sizetmp)
@@ -210,6 +214,7 @@ func CreateImgWaterMarkFORM(ctx *gin.Context) {
 		Position:       position,
 		X:              x,
 		Y:              y,
+		WordDirection:  wordDirection,
 		WaterMarkFiles: waterMarkFilesArr,
 	}
 
@@ -260,7 +265,7 @@ func createImgWaterMark(waterMarkStruct typeWaterMarkStruct) (string, error) {
 				filePath := "./app/imageProcessing/tmp/waterMarkFile" + strconv.Itoa(key) + ".png"
 				if fileType == "W" {
 					//将传入的文字转为图片
-					_, err := imageProcessing_service.Words2Img(fileContent, waterMarkStruct.Color, fontPath, filePath)
+					_, err := imageProcessing_service.Words2Img(fileContent, waterMarkStruct.Color, waterMarkStruct.WordDirection, fontPath, filePath)
 					if err != nil {
 						return "", err
 					}

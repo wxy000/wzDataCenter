@@ -95,15 +95,14 @@ func ResizeImg(imgPath string, afterWidth int, afterHeight int) (image.Image, er
 }
 
 // Words2Img 传入文字、颜色，生成透明图片，并返回base64串
-func Words2Img(words string, color string, fontPath string, outputPath string) (string, error) {
+func Words2Img(words string, color string, rules string, fontPath string, outputPath string) (string, error) {
 
-	//高度
-	wordsHeight := 65
-	//宽度（ascii字符只占大概一半汉字的宽度）
-	wordsLen := utf8.RuneCountInString(words)
-	wordsWidth := wordsLen*wordsHeight + 1
-	//创建画布
-	img := image.NewRGBA(image.Rect(0, 0, wordsWidth, wordsHeight))
+	if rules == "" || len(rules) == 0 {
+		rules = "H"
+	}
+	if rules != "H" && rules != "V" {
+		rules = "H"
+	}
 
 	//读字体
 	fontBytes, err := ioutil.ReadFile(fontPath)
@@ -115,10 +114,31 @@ func Words2Img(words string, color string, fontPath string, outputPath string) (
 		return "", err
 	}
 
+	//多少个字
+	wordsLen := utf8.RuneCountInString(words)
+	wordsHeight := 0
+	wordsWidth := 0
+	if rules == "H" {
+		//高度
+		wordsHeight = 65
+		//宽度
+		wordsWidth = wordsLen*wordsHeight + 1
+	} else if rules == "V" {
+		wordsWidth = 65
+		wordsHeight = wordsLen*wordsWidth + 1
+	}
+
+	//创建画布
+	img := image.NewRGBA(image.Rect(0, 0, wordsWidth, wordsHeight))
+
 	c := freetype.NewContext()
 	c.SetDPI(72)
 	c.SetFont(font)
-	c.SetFontSize(float64(wordsHeight))
+	if rules == "H" {
+		c.SetFontSize(float64(wordsHeight))
+	} else if rules == "V" {
+		c.SetFontSize(float64(wordsWidth))
+	}
 	c.SetClip(img.Bounds())
 	c.SetDst(img)
 	if color == "white" {
@@ -128,9 +148,20 @@ func Words2Img(words string, color string, fontPath string, outputPath string) (
 	}
 
 	//设置字体显示位置
-	_, err = c.DrawString(words, freetype.Pt(0, wordsHeight-6))
-	if err != nil {
-		return "", err
+	if rules == "H" {
+		_, err = c.DrawString(words, freetype.Pt(0, wordsHeight-6))
+		if err != nil {
+			return "", err
+		}
+	} else if rules == "V" {
+		i := 0
+		for _, word := range words {
+			_, err = c.DrawString(string(word), freetype.Pt(0, wordsWidth*(i+1)-6))
+			if err != nil {
+				return "", err
+			}
+			i += 1
+		}
 	}
 
 	//切掉透明的部分
@@ -180,10 +211,10 @@ outloop4:
 		}
 	}
 
-	subImg := img.SubImage(image.Rect(x1, y1, x2, y2)).(*image.RGBA)
+	_ = img.SubImage(image.Rect(x1, y1, x2, y2)).(*image.RGBA)
 
 	//保存
-	path, err := SaveFile(subImg, outputPath)
+	path, err := SaveFile(img, outputPath)
 	if err != nil {
 		return "", err
 	}
