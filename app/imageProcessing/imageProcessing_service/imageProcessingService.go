@@ -98,7 +98,7 @@ func ResizeImg(imgPath string, afterWidth int, afterHeight int) (image.Image, er
 func Words2Img(words string, color string, fontPath string, outputPath string) (string, error) {
 
 	//高度
-	wordsHeight := 40
+	wordsHeight := 65
 	//宽度（ascii字符只占大概一半汉字的宽度）
 	wordsLen := utf8.RuneCountInString(words)
 	wordsWidth := wordsLen*wordsHeight + 1
