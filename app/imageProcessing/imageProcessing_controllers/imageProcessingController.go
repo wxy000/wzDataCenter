@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"wzDataCenter/app/imageProcessing/imageProcessing_service"
 	"wzDataCenter/common"
+	"wzDataCenter/utils"
 )
 
 type typeWaterMarkStruct struct {
@@ -102,7 +103,7 @@ func CreateImgWaterMarkWithWords(ctx *gin.Context) {
 		common.FailWithMsg(err.Error(), ctx)
 		return
 	}
-	base64file, err := imageProcessing_service.FileToBase64(path)
+	base64file, err := utils.FileToBase64(path)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 		return
@@ -139,7 +140,7 @@ func CreateImgWaterMarkWithIdio(ctx *gin.Context) {
 	waterMarkPath := "./app/imageProcessing/tmp/waterMark.png"
 
 	//将base64转为图片并暂存
-	err := imageProcessing_service.Base64ToFile(idio, idioPath)
+	err := utils.Base64ToFile(idio, idioPath)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 		return
@@ -174,7 +175,7 @@ func CreateImgWaterMarkWithIdio(ctx *gin.Context) {
 		common.FailWithMsg(err.Error(), ctx)
 		return
 	}
-	base64file, err := imageProcessing_service.FileToBase64(path)
+	base64file, err := utils.FileToBase64(path)
 	if err != nil {
 		common.FailWithMsg(err.Error(), ctx)
 		return
@@ -265,7 +266,7 @@ func createImgWaterMark(waterMarkStruct typeWaterMarkStruct) (string, error) {
 					}
 				} else if fileType == "T" {
 					//将base64转为图片并暂存
-					err := imageProcessing_service.Base64ToFile(fileContent, filePath)
+					err := utils.Base64ToFile(fileContent, filePath)
 					if err != nil {
 						return "", err
 					}
@@ -341,7 +342,7 @@ func createImgWaterMark(waterMarkStruct typeWaterMarkStruct) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	base64file, err := imageProcessing_service.FileToBase64(path)
+	base64file, err := utils.FileToBase64(path)
 	if err != nil {
 		return "", err
 	}

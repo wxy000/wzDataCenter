@@ -1,7 +1,6 @@
 package imageProcessing_service
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/golang/freetype"
@@ -13,6 +12,7 @@ import (
 	"os"
 	"strings"
 	"unicode/utf8"
+	"wzDataCenter/utils"
 )
 
 // SetLittleWaterMarkToBG 将小水印打在背景上
@@ -151,7 +151,7 @@ func Words2Img(words string, color string, fontPath string, outputPath string) (
 	if err != nil {
 		return "", err
 	}
-	base64file, err := FileToBase64(path)
+	base64file, err := utils.FileToBase64(path)
 	if err != nil {
 		return "", err
 	}
@@ -168,27 +168,4 @@ func SaveFile(pic *image.RGBA, path string) (string, error) {
 	}
 
 	return path, nil
-}
-
-func FileToBase64(path string) (string, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return "", err
-	}
-	base64Str := base64.StdEncoding.EncodeToString(data)
-	return base64Str, nil
-}
-
-func Base64ToFile(base64Str string, outputPath string) error {
-	// 解码base64字符串
-	data, err := base64.StdEncoding.DecodeString(base64Str)
-	if err != nil {
-		return err
-	}
-	// 将解码的数据写入文件
-	err = ioutil.WriteFile(outputPath, data, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
 }
