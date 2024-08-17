@@ -49,3 +49,10 @@ type CustomerHeatmap struct {
 	Dateyear     int     `json:"dateyear"`     //年度
 	Rk           int     `json:"rk"`           //类型排序
 }
+
+type CustomizationLine struct {
+	Clid         string  `json:"clid"`         //类型
+	Datemonthday string  `json:"datemonthday"` //日期
+	Dayofyear    int     `json:"dayofyear"`    //当前年第几天
+	Esti         float64 `json:"esti"`         //预计工时
+}

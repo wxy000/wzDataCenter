@@ -103,3 +103,21 @@ func GetAnalysisHeatMapCustomer(userId uint, dateYear string) (bool, *[]Customer
 	}
 	return true, &d1, r1.RowsAffected
 }
+
+// GetAnalysisLineCustomization 获取‘客制返工关系图’
+func GetAnalysisLineCustomization(userId uint, dateYear string) (bool, *[]CustomizationLine, int64) {
+	var d1 []CustomizationLine
+	sql := `SELECT clid,concat(DATE_FORMAT(dat, '%m'),'-',DATE_FORMAT(dat, '%d')) datemonthday,DAYOFYEAR(dat) dayofyear,sum(esti) esti
+      		  FROM k_sum
+			 WHERE acct = ?
+			   AND year(dat) = ?
+			   AND clid IN ('T0343','T0344')
+			 GROUP BY clid,concat(DATE_FORMAT(dat, '%m'),'-',DATE_FORMAT(dat, '%d'))
+			 ORDER BY clid,concat(DATE_FORMAT(dat, '%m'),'-',DATE_FORMAT(dat, '%d'))`
+	res := zentao_common.ZENTAO_DB.Raw(sql, userId, dateYear)
+	r1 := res.Scan(&d1)
+	if r1.Error != nil {
+		return false, nil, 0
+	}
+	return true, &d1, r1.RowsAffected
+}
